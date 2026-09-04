@@ -1,0 +1,58 @@
+{
+  "1": {
+    "title": "System Call Commands in Linux",
+    "answer": "System calls allow a program to request services from the Linux kernel.\n\nImportant system calls:\nfork()  - creates a new child process.\nexec()  - replaces the current process image with another program.\ngetpid() - returns the process ID of the calling process.\npipe()  - creates a pipe for inter-process communication.\nexit()  - terminates a process.\nopen()  - opens or creates a file.\nclose() - closes an open file descriptor.\nstat()  - obtains file information.\nuname() - obtains system information.\n\nExample commands:\nman 2 fork\nman 2 execve\nman 2 getpid\nman 2 pipe\nman 2 open\nman 2 close\nman 2 stat\nman 2 uname\n\nExample C program:\n#include <stdio.h>\n#include <unistd.h>\n#include <sys/utsname.h>\n\nint main() {\n    struct utsname info;\n    printf(\"PID: %d\\n\", getpid());\n\n    if (uname(&info) == 0) {\n        printf(\"System: %s\\n\", info.sysname);\n        printf(\"Release: %s\\n\", info.release);\n        printf(\"Machine: %s\\n\", info.machine);\n    }\n    return 0;\n}\n\nCompile and run:\ngcc exp1.c -o exp1\n./exp1"
+  },
+  "2": {
+    "title": "Process Related Commands in Linux",
+    "answer": "Important process-related commands:\n\ntop    - displays running processes and resource usage.\nps     - displays process information.\nkill   - sends a signal to a process.\nwait   - waits for a child process to finish (shell built-in / system-call concept).\nsleep  - pauses execution for a specified time.\nnice   - starts a process with a specified CPU scheduling priority.\nrenice - changes the priority of an existing process.\nbg     - resumes a stopped job in the background.\nfg     - brings a background/stopped job to the foreground.\n\nExamples:\ntop\nps\nps aux\nkill PID\nsleep 5\nnice -n 10 command\nrenice 10 -p PID\njobs\nbg\nfg"
+  },
+  "3": {
+    "title": "Messages to Logged-in Users and Shared Memory",
+    "answer": "3(a) Commands for sending messages to logged-in users:\n\nwho    - shows users currently logged in.\ncat    - displays the contents of a file; it can be used with a terminal device for messaging.\nwall   - broadcasts a message to all logged-in users.\nwrite  - sends a message to a specific logged-in user.\nmesg   - controls whether other users can write messages to your terminal.\n\nExamples:\nwho\nwall \"System maintenance in 5 minutes\"\nwrite username\nmesg y\nmesg n\n\n3(b) List processes and IPC objects associated with System V IPC:\n\nipcs        - displays IPC facilities.\nipcs -m     - displays shared-memory segments.\nipcs -q     - displays message queues.\nipcs -s     - displays semaphore arrays.\n\nExample:\nipcs -m"
+  },
+  "4": {
+    "title": "FCFS CPU Scheduling",
+    "answer": "Python program to calculate average waiting time and average turnaround time using First Come First Serve (FCFS).\n\nFormula:\nWaiting Time = Completion Time - Arrival Time - Burst Time\nTurnaround Time = Completion Time - Arrival Time\n\nProgram:",
+    "code": "n = int(input(\"Enter number of processes: \"))\nbt = []\nfor i in range(n):\n    bt.append(int(input(f\"Enter burst time for P{i+1}: \")))\n\nwt = [0] * n\ntat = [0] * n\n\nfor i in range(1, n):\n    wt[i] = wt[i-1] + bt[i-1]\n\nfor i in range(n):\n    tat[i] = wt[i] + bt[i]\n\nprint(\"\\nProcess\\tBurst\\tWaiting\\tTurnaround\")\nfor i in range(n):\n    print(f\"P{i+1}\\t{bt[i]}\\t{wt[i]}\\t{tat[i]}\")\n\nprint(f\"\\nAverage Waiting Time: {sum(wt)/n:.2f}\")\nprint(f\"Average Turnaround Time: {sum(tat)/n:.2f}\")"
+  },
+  "5": {
+    "title": "SJF CPU Scheduling",
+    "answer": "Python program to calculate average waiting time and average turnaround time using non-preemptive Shortest Job First (SJF).\n\nThe processes are arranged in ascending order of burst time.",
+    "code": "n = int(input(\"Enter number of processes: \"))\nprocesses = []\n\nfor i in range(n):\n    bt = int(input(f\"Enter burst time for P{i+1}: \"))\n    processes.append([i + 1, bt])\n\nprocesses.sort(key=lambda x: x[1])\n\nwt = [0] * n\ntat = [0] * n\n\nfor i in range(1, n):\n    wt[i] = wt[i-1] + processes[i-1][1]\n\nfor i in range(n):\n    tat[i] = wt[i] + processes[i][1]\n\nprint(\"\\nProcess\\tBurst\\tWaiting\\tTurnaround\")\nfor i in range(n):\n    print(f\"P{processes[i][0]}\\t{processes[i][1]}\\t{wt[i]}\\t{tat[i]}\")\n\nprint(f\"\\nAverage Waiting Time: {sum(wt)/n:.2f}\")\nprint(f\"Average Turnaround Time: {sum(tat)/n:.2f}\")"
+  },
+  "6": {
+    "title": "Priority CPU Scheduling",
+    "answer": "Python program for non-preemptive Priority CPU Scheduling.\n\nLower numerical value is treated as higher priority.",
+    "code": "n = int(input(\"Enter number of processes: \"))\nprocesses = []\n\nfor i in range(n):\n    bt = int(input(f\"Enter burst time for P{i+1}: \"))\n    priority = int(input(f\"Enter priority for P{i+1}: \"))\n    processes.append([i + 1, bt, priority])\n\nprocesses.sort(key=lambda x: x[2])\n\nwt = [0] * n\ntat = [0] * n\n\nfor i in range(1, n):\n    wt[i] = wt[i-1] + processes[i-1][1]\n\nfor i in range(n):\n    tat[i] = wt[i] + processes[i][1]\n\nprint(\"\\nProcess\\tBurst\\tPriority\\tWaiting\\tTurnaround\")\nfor i, p in enumerate(processes):\n    print(f\"P{p[0]}\\t{p[1]}\\t{p[2]}\\t\\t{wt[i]}\\t{tat[i]}\")\n\nprint(f\"\\nAverage Waiting Time: {sum(wt)/n:.2f}\")\nprint(f\"Average Turnaround Time: {sum(tat)/n:.2f}\")"
+  },
+  "7": {
+    "title": "Round Robin CPU Scheduling",
+    "answer": "Python program to calculate average waiting time and average turnaround time using Round Robin CPU Scheduling.",
+    "code": "n = int(input(\"Enter number of processes: \"))\nbt = []\n\nfor i in range(n):\n    bt.append(int(input(f\"Enter burst time for P{i+1}: \")))\n\nquantum = int(input(\"Enter time quantum: \"))\n\nremaining = bt.copy()\nwt = [0] * n\ntat = [0] * n\ntime = 0\n\nwhile any(r > 0 for r in remaining):\n    for i in range(n):\n        if remaining[i] > 0:\n            execution = min(quantum, remaining[i])\n            time += execution\n            remaining[i] -= execution\n\n            if remaining[i] == 0:\n                tat[i] = time\n                wt[i] = tat[i] - bt[i]\n\nprint(\"\\nProcess\\tBurst\\tWaiting\\tTurnaround\")\nfor i in range(n):\n    print(f\"P{i+1}\\t{bt[i]}\\t{wt[i]}\\t{tat[i]}\")\n\nprint(f\"\\nAverage Waiting Time: {sum(wt)/n:.2f}\")\nprint(f\"Average Turnaround Time: {sum(tat)/n:.2f}\")"
+  },
+  "8": {
+    "title": "Banker's Algorithm",
+    "answer": "Python program to implement the Banker's Algorithm for deadlock avoidance.\n\nThe program calculates the Need matrix and checks whether the system is in a safe state.",
+    "code": "n = int(input(\"Enter number of processes: \"))\nm = int(input(\"Enter number of resource types: \"))\n\nprint(\"Enter Allocation matrix:\")\nallocation = [list(map(int, input().split())) for _ in range(n)]\n\nprint(\"Enter Max matrix:\")\nmaximum = [list(map(int, input().split())) for _ in range(n)]\n\nprint(\"Enter Available resources:\")\navailable = list(map(int, input().split()))\n\nneed = [[maximum[i][j] - allocation[i][j] for j in range(m)]\n        for i in range(n)]\n\nwork = available.copy()\nfinish = [False] * n\nsafe_sequence = []\n\nwhile len(safe_sequence) < n:\n    found = False\n\n    for i in range(n):\n        if not finish[i] and all(need[i][j] <= work[j] for j in range(m)):\n            for j in range(m):\n                work[j] += allocation[i][j]\n            finish[i] = True\n            safe_sequence.append(i)\n            found = True\n\n    if not found:\n        break\n\nprint(\"\\nNeed Matrix:\")\nfor row in need:\n    print(*row)\n\nif len(safe_sequence) == n:\n    print(\"\\nSystem is in a SAFE state.\")\n    print(\"Safe sequence:\", \" -> \".join(f\"P{i}\" for i in safe_sequence))\nelse:\n    print(\"\\nSystem is NOT in a safe state.\")"
+  },
+  "9": {
+    "title": "Basic Memory Management Commands",
+    "answer": "Important memory-management commands:\n\ndf       - displays filesystem disk-space usage.\nfree     - displays RAM and swap usage.\nvmstat   - reports memory, process, paging, and CPU statistics.\n /proc/meminfo - virtual file containing detailed memory information.\nhtop     - interactive process and resource monitor.\n\nExamples:\ndf -h\nfree -h\nvmstat\ncat /proc/meminfo\nhtop"
+  },
+  "10": {
+    "title": "FIFO Page Replacement",
+    "answer": "Python program to implement First In First Out (FIFO) Page Replacement.\n\nFIFO replaces the page that has been in memory for the longest time.",
+    "code": "pages = list(map(int, input(\"Enter reference string: \").split()))\nframes = int(input(\"Enter number of frames: \"))\n\nmemory = []\nfaults = 0\n\nprint(\"\\nPage\\tFrames\\t\\tStatus\")\n\nfor page in pages:\n    if page not in memory:\n        faults += 1\n        if len(memory) < frames:\n            memory.append(page)\n        else:\n            memory.pop(0)\n            memory.append(page)\n        status = \"Page Fault\"\n    else:\n        status = \"Hit\"\n\n    print(f\"{page}\\t{memory}\\t{status}\")\n\nprint(f\"\\nTotal Page Faults: {faults}\")\nprint(f\"Total Page Hits: {len(pages) - faults}\")"
+  },
+  "11": {
+    "title": "LRU Page Replacement",
+    "answer": "Python program to implement Least Recently Used (LRU) Page Replacement.\n\nLRU replaces the page that has not been used for the longest time.",
+    "code": "pages = list(map(int, input(\"Enter reference string: \").split()))\nframes = int(input(\"Enter number of frames: \"))\n\nmemory = []\nfaults = 0\n\nprint(\"\\nPage\\tFrames\\t\\tStatus\")\n\nfor page in pages:\n    if page in memory:\n        memory.remove(page)\n        memory.append(page)\n        status = \"Hit\"\n    else:\n        faults += 1\n        if len(memory) >= frames:\n            memory.pop(0)\n        memory.append(page)\n        status = \"Page Fault\"\n\n    print(f\"{page}\\t{memory}\\t{status}\")\n\nprint(f\"\\nTotal Page Faults: {faults}\")\nprint(f\"Total Page Hits: {len(pages) - faults}\")"
+  },
+  "12": {
+    "title": "Sequential File Allocation",
+    "answer": "Python program to implement a simple sequential file allocation method.\n\nIn sequential allocation, a file occupies consecutive disk blocks.",
+    "code": "total_blocks = int(input(\"Enter total number of disk blocks: \"))\nstart = int(input(\"Enter starting block: \"))\nlength = int(input(\"Enter number of blocks required: \"))\n\nif start < 0 or start + length > total_blocks:\n    print(\"Invalid block range.\")\nelse:\n    print(\"\\nAllocated blocks:\")\n    for block in range(start, start + length):\n        print(block, end=\" \")\n    print(\"\\nFile allocated successfully using sequential allocation.\")"
+  }
+}
