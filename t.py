@@ -6,160 +6,224 @@ import sys
 
 
 # ============================================================
-#             OPERATING SYSTEMS LAB
-#                 EXPERIMENT NO. 3
+#                OPERATING SYSTEMS LAB
+#                  EXPERIMENT NO. 3
 #
-# Topic:
 # a. Commands for Sending Messages to Logged-in Users
 #    who, cat, wall, write, mesg
 #
-# b. List Processes Attached to Shared Memory Segment
+# b. List Processes Attached to a Shared Memory Segment
 #    ipcs
 # ============================================================
 
 
-def run_command(command, input_text=None):
-    """
-    Execute a Linux command and display its output.
-    """
+# ------------------------------------------------------------
+# FUNCTION: Run Linux command
+# ------------------------------------------------------------
+
+def run_command(command, input_data=None):
 
     try:
         result = subprocess.run(
             command,
-            input=input_text,
+            input=input_data,
             text=True,
             capture_output=True
         )
 
         if result.stdout:
-            print(result.stdout)
+            print(result.stdout, end="")
 
         if result.stderr:
-            print("Error:", result.stderr)
+            print("Error:", result.stderr.strip())
 
         return result.returncode
 
     except FileNotFoundError:
-        print("Command not found:", command[0])
+        print("\nCommand not found:", command[0])
         return 1
 
-    except Exception as e:
-        print("Error:", e)
+    except Exception as error:
+        print("\nError:", error)
         return 1
+
+
+# ------------------------------------------------------------
+# FUNCTION: Pause
+# ------------------------------------------------------------
+
+def pause():
+
+    input("\nPress ENTER to continue...")
 
 
 # ------------------------------------------------------------
 # 1. WHO COMMAND
 # ------------------------------------------------------------
 
-def show_logged_users():
+def who_command():
 
-    print("\n============================================================")
-    print("                 WHO COMMAND")
-    print("============================================================")
+    print("\n")
+    print("=" * 60)
+    print("                    WHO COMMAND")
+    print("=" * 60)
 
     print("\nPurpose:")
-    print("Displays all users currently logged into the Linux system.\n")
+    print("Displays users currently logged into the Linux system.\n")
 
     run_command(["who"])
+
+    pause()
 
 
 # ------------------------------------------------------------
 # 2. TTY COMMAND
 # ------------------------------------------------------------
 
-def show_current_terminal():
+def tty_command():
 
-    print("\n============================================================")
-    print("                 CURRENT TERMINAL")
-    print("============================================================")
+    print("\n")
+    print("=" * 60)
+    print("                    TTY COMMAND")
+    print("=" * 60)
 
-    print("\nYour current terminal is:\n")
+    print("\nPurpose:")
+    print("Displays the terminal associated with the current session.\n")
 
     run_command(["tty"])
+
+    pause()
 
 
 # ------------------------------------------------------------
 # 3. CAT COMMAND
 # ------------------------------------------------------------
 
-def send_using_cat():
+def cat_command():
 
-    print("\n============================================================")
-    print("                 CAT COMMAND")
-    print("============================================================")
+    print("\n")
+    print("=" * 60)
+    print("                    CAT COMMAND")
+    print("=" * 60)
 
-    print("\nThe cat command can write text to a terminal device.")
-    print("First, check the logged-in users:\n")
+    print("\nThe cat command can be used to write a message")
+    print("to a terminal device.\n")
+
+    print("Currently logged-in users:\n")
 
     run_command(["who"])
 
     print("\nExample terminal:")
-    print("/dev/pts/1")
+    print("pts/3")
+    print("pts/21")
+    print("pts/2")
 
-    print("\nEnter the terminal device where you want to send")
-    print("the message.")
-    print("Example: /dev/pts/1\n")
+    print()
 
-    terminal = input("Terminal device: ").strip()
+    terminal = input(
+        "Enter terminal (example pts/3): "
+    ).strip()
 
-    if not terminal:
-        print("No terminal entered.")
+    # --------------------------------------------------------
+    # Validate terminal
+    # --------------------------------------------------------
+
+    if not terminal.startswith("pts/"):
+
+        print("\nInvalid terminal!")
+        print("Use a terminal such as pts/3 or pts/21.")
+        pause()
         return
 
-    # Security check: only allow terminal device paths
-    if not terminal.startswith("/dev/pts/"):
-        print("Invalid terminal.")
-        print("Use a terminal such as /dev/pts/1")
+    terminal_number = terminal[4:]
+
+    if not terminal_number.isdigit():
+
+        print("\nInvalid terminal!")
+        print("Example: pts/3")
+        pause()
         return
 
-    if not os.path.exists(terminal):
-        print("Terminal does not exist:", terminal)
+    device = "/dev/" + terminal
+
+    # --------------------------------------------------------
+    # Check whether terminal exists
+    # --------------------------------------------------------
+
+    if not os.path.exists(device):
+
+        print("\nTerminal does not exist:", device)
+        print("Check the output of the 'who' command.")
+
+        pause()
         return
 
-    print("\nEnter your message.")
-    print("Press ENTER when finished.\n")
+    # --------------------------------------------------------
+    # Enter message
+    # --------------------------------------------------------
+
+    print("\nEnter your message:")
 
     message = input("Message: ")
 
-    try:
-        # Equivalent idea to:
-        # echo "message" > /dev/pts/1
+    if not message:
 
-        with open(terminal, "w") as terminal_file:
+        print("\nMessage cannot be empty.")
+        pause()
+        return
+
+    # --------------------------------------------------------
+    # Send message
+    # --------------------------------------------------------
+
+    try:
+
+        with open(device, "w") as terminal_file:
+
             terminal_file.write(
-                "\n\nMessage from Experiment 3:\n"
-                + message
-                + "\n\n"
+                "\n"
+                "====================================\n"
+                "Message from Experiment No. 3\n"
+                "====================================\n"
+                + message +
+                "\n"
+                "====================================\n"
             )
 
-        print("\nMessage sent successfully using terminal device.")
+        print("\nMessage sent successfully!")
 
     except PermissionError:
-        print("\nPermission denied.")
-        print("You may not have permission to write to that terminal.")
 
-    except Exception as e:
-        print("\nError:", e)
+        print("\nPermission denied.")
+        print("You do not have permission to write to this terminal.")
+
+    except Exception as error:
+
+        print("\nError:", error)
+
+    pause()
 
 
 # ------------------------------------------------------------
 # 4. WALL COMMAND
 # ------------------------------------------------------------
 
-def send_wall_message():
+def wall_command():
 
-    print("\n============================================================")
-    print("                 WALL COMMAND")
-    print("============================================================")
+    print("\n")
+    print("=" * 60)
+    print("                    WALL COMMAND")
+    print("=" * 60)
 
-    print("\nThe wall command broadcasts a message to")
-    print("all logged-in users.\n")
+    print("\nPurpose:")
+    print("Sends a message to all logged-in users.\n")
 
     message = input("Enter message: ")
 
     if not message:
-        print("Message cannot be empty.")
+
+        print("\nMessage cannot be empty.")
+        pause()
         return
 
     try:
@@ -172,58 +236,185 @@ def send_wall_message():
         )
 
         if result.returncode == 0:
-            print("\nBroadcast message sent successfully.")
+
+            print("\nBroadcast message sent successfully!")
 
         else:
-            print("\nUnable to send wall message.")
+
+            print("\nUnable to send the message.")
 
             if result.stderr:
-                print(result.stderr)
+                print("Reason:", result.stderr.strip())
 
-    except Exception as e:
-        print("Error:", e)
+    except FileNotFoundError:
+
+        print("\nwall command is not available.")
+
+    except Exception as error:
+
+        print("\nError:", error)
+
+    pause()
 
 
 # ------------------------------------------------------------
 # 5. WRITE COMMAND
 # ------------------------------------------------------------
 
-def send_write_message():
+def write_command():
 
-    print("\n============================================================")
-    print("                 WRITE COMMAND")
-    print("============================================================")
+    print("\n")
+    print("=" * 60)
+    print("                   WRITE COMMAND")
+    print("=" * 60)
 
-    print("\nThe write command sends a message to a particular")
-    print("user's terminal.\n")
+    print("\nPurpose:")
+    print("Sends a message to a particular user's terminal.\n")
 
     print("Currently logged-in users:\n")
 
     run_command(["who"])
 
-    print("\nExample:")
-    print("Username : kali")
-    print("Terminal : pts/1")
+    print("\n")
+    print("From the above list, use a username and its")
+    print("corresponding terminal.")
+    print()
+    print("Example:")
+    print("Username : dce")
+    print("Terminal : pts/3")
     print()
 
+    # --------------------------------------------------------
+    # Get username
+    # --------------------------------------------------------
+
     username = input("Enter username: ").strip()
-    terminal = input("Enter terminal (example pts/1): ").strip()
 
-    if not username or not terminal:
-        print("Username and terminal are required.")
+    if not username:
+
+        print("\nUsername cannot be empty.")
+        pause()
         return
 
-    # Basic validation
-    if "/" in username or "/" in terminal:
-        print("Invalid username or terminal.")
+    # --------------------------------------------------------
+    # Get terminal
+    # --------------------------------------------------------
+
+    terminal = input(
+        "Enter terminal (example pts/3): "
+    ).strip()
+
+    if not terminal:
+
+        print("\nTerminal cannot be empty.")
+        pause()
         return
 
-    print("\nEnter your message.")
+    # --------------------------------------------------------
+    # Correct terminal validation
+    #
+    # pts/3 is VALID.
+    # pts/21 is VALID.
+    # pts/2 is VALID.
+    # --------------------------------------------------------
+
+    if not terminal.startswith("pts/"):
+
+        print("\nInvalid terminal!")
+        print("Enter a terminal such as:")
+        print("pts/3")
+        print("pts/21")
+        print("pts/2")
+
+        pause()
+        return
+
+    terminal_number = terminal[4:]
+
+    if not terminal_number.isdigit():
+
+        print("\nInvalid terminal!")
+        print("The terminal should look like pts/3.")
+
+        pause()
+        return
+
+    # --------------------------------------------------------
+    # Check whether this username + terminal exists
+    # --------------------------------------------------------
+
+    try:
+
+        who_result = subprocess.run(
+            ["who"],
+            capture_output=True,
+            text=True
+        )
+
+        logged_in = False
+
+        for line in who_result.stdout.splitlines():
+
+            parts = line.split()
+
+            if len(parts) >= 2:
+
+                current_user = parts[0]
+                current_terminal = parts[1]
+
+                if (
+                    current_user == username
+                    and current_terminal == terminal
+                ):
+
+                    logged_in = True
+                    break
+
+        if not logged_in:
+
+            print("\nThe following user/terminal combination")
+            print("was not found in the current 'who' output.")
+
+            print("\nYou entered:")
+            print("Username :", username)
+            print("Terminal :", terminal)
+
+            print("\nPlease use an exact username and terminal")
+            print("shown by the 'who' command.")
+
+            pause()
+            return
+
+    except Exception as error:
+
+        print("\nCould not verify the login information.")
+        print("Error:", error)
+
+        pause()
+        return
+
+    # --------------------------------------------------------
+    # Enter message
+    # --------------------------------------------------------
+
+    print("\nUser and terminal found successfully.")
+
+    print("\nEnter your message:")
+
     message = input("Message: ")
 
     if not message:
-        print("Message cannot be empty.")
+
+        print("\nMessage cannot be empty.")
+        pause()
         return
+
+    # --------------------------------------------------------
+    # Send message using write
+    # --------------------------------------------------------
+
+    print("\nSending message...")
+    print("-" * 40)
 
     try:
 
@@ -235,137 +426,178 @@ def send_write_message():
         )
 
         if result.returncode == 0:
-            print("\nMessage sent successfully using write.")
+
+            print("Message sent successfully!")
+            print()
+            print("Username :", username)
+            print("Terminal :", terminal)
+            print("Message  :", message)
 
         else:
-            print("\nUnable to send message.")
+
+            print("Unable to send the message.")
 
             if result.stderr:
-                print("Reason:", result.stderr)
+
+                print("\nReason:")
+                print(result.stderr.strip())
 
     except FileNotFoundError:
-        print("The write command is not available on this system.")
 
-    except Exception as e:
-        print("Error:", e)
+        print("\nThe 'write' command is not installed.")
+
+    except Exception as error:
+
+        print("\nError:", error)
+
+    pause()
 
 
 # ------------------------------------------------------------
 # 6. MESG COMMAND
 # ------------------------------------------------------------
 
-def check_mesg():
+def mesg_command():
 
-    print("\n============================================================")
-    print("                 MESG COMMAND")
-    print("============================================================")
+    print("\n")
+    print("=" * 60)
+    print("                    MESG COMMAND")
+    print("=" * 60)
 
-    print("\nmesg controls whether other users can send")
-    print("messages to your terminal.\n")
+    print("\nPurpose:")
+    print("Checks whether other users can send messages")
+    print("to your terminal.\n")
 
     run_command(["mesg"])
 
+    pause()
+
 
 # ------------------------------------------------------------
-# 7. ENABLE MESG
+# 7. ENABLE MESSAGES
 # ------------------------------------------------------------
 
-def enable_mesg():
+def enable_messages():
 
-    print("\n============================================================")
-    print("              ENABLE MESSAGES")
-    print("============================================================")
+    print("\n")
+    print("=" * 60)
+    print("                 ENABLE MESSAGES")
+    print("=" * 60)
 
     result = run_command(["mesg", "y"])
 
     if result == 0:
-        print("Messages have been enabled.")
+
+        print("\nMessages have been ENABLED.")
+
         print("\nCurrent status:")
         run_command(["mesg"])
 
+    pause()
+
 
 # ------------------------------------------------------------
-# 8. DISABLE MESG
+# 8. DISABLE MESSAGES
 # ------------------------------------------------------------
 
-def disable_mesg():
+def disable_messages():
 
-    print("\n============================================================")
-    print("              DISABLE MESSAGES")
-    print("============================================================")
+    print("\n")
+    print("=" * 60)
+    print("                 DISABLE MESSAGES")
+    print("=" * 60)
 
     result = run_command(["mesg", "n"])
 
     if result == 0:
-        print("Messages have been disabled.")
+
+        print("\nMessages have been DISABLED.")
+
         print("\nCurrent status:")
         run_command(["mesg"])
+
+    pause()
 
 
 # ------------------------------------------------------------
 # 9. IPCS -M
 # ------------------------------------------------------------
 
-def show_shared_memory():
+def ipcs_shared_memory():
 
-    print("\n============================================================")
-    print("                 IPCS -M")
-    print("============================================================")
+    print("\n")
+    print("=" * 60)
+    print("                   IPCS -M")
+    print("=" * 60)
 
-    print("\nipcs -m displays shared memory segments.\n")
+    print("\nPurpose:")
+    print("Displays shared memory segments.\n")
 
     run_command(["ipcs", "-m"])
+
+    pause()
 
 
 # ------------------------------------------------------------
 # 10. IPCS -M -P
 # ------------------------------------------------------------
 
-def show_shared_memory_processes():
+def ipcs_processes():
 
-    print("\n============================================================")
-    print("              IPCS -M -P")
-    print("============================================================")
+    print("\n")
+    print("=" * 60)
+    print("                 IPCS -M -P")
+    print("=" * 60)
 
-    print("\nThis command displays process IDs associated")
-    print("with shared memory segments.\n")
+    print("\nPurpose:")
+    print("Displays the creator PID and last-operation PID")
+    print("associated with shared memory segments.\n")
 
     run_command(["ipcs", "-m", "-p"])
+
+    pause()
 
 
 # ------------------------------------------------------------
 # 11. IPCS -M -T
 # ------------------------------------------------------------
 
-def show_shared_memory_time():
+def ipcs_time():
 
-    print("\n============================================================")
-    print("              IPCS -M -T")
-    print("============================================================")
+    print("\n")
+    print("=" * 60)
+    print("                 IPCS -M -T")
+    print("=" * 60)
 
-    print("\nThis command displays time information about")
-    print("shared memory segments.\n")
+    print("\nPurpose:")
+    print("Displays time information for shared memory segments.\n")
 
     run_command(["ipcs", "-m", "-t"])
+
+    pause()
 
 
 # ------------------------------------------------------------
 # 12. COMPLETE IPC INFORMATION
 # ------------------------------------------------------------
 
-def show_all_ipc():
+def complete_ipcs():
 
-    print("\n============================================================")
-    print("                   IPCS")
-    print("============================================================")
+    print("\n")
+    print("=" * 60)
+    print("                     IPCS")
+    print("=" * 60)
 
-    print("\nipcs displays information about IPC resources.")
-    print("These include:")
-    print("1. Message queues")
-    print("2. Shared memory")
-    print("3. Semaphores\n")
+    print("\nPurpose:")
+    print("Displays System V IPC information.")
+    print("This includes:")
+    print("- Message queues")
+    print("- Shared memory")
+    print("- Semaphores\n")
 
     run_command(["ipcs"])
+
+    pause()
 
 
 # ------------------------------------------------------------
@@ -375,75 +607,102 @@ def show_all_ipc():
 def complete_experiment():
 
     print("\n")
-    print("============================================================")
-    print("             COMPLETE EXPERIMENT NO. 3")
-    print("============================================================")
+    print("=" * 70)
+    print("                 COMPLETE EXPERIMENT NO. 3")
+    print("=" * 70)
 
-    print("\n\nPART A")
-    print("============================================================")
-    print("COMMANDS FOR SENDING MESSAGES TO LOGGED-IN USERS")
-    print("============================================================")
+    # ========================================================
+    # PART A
+    # ========================================================
+
+    print("\n")
+    print("=" * 70)
+    print("PART A: COMMANDS FOR SENDING MESSAGES")
+    print("=" * 70)
 
     # WHO
+
     print("\n1. WHO COMMAND")
-    print("------------------------------------------------------------")
-    show_logged_users()
+    print("-" * 70)
+
+    run_command(["who"])
 
     # TTY
-    print("\n2. CURRENT TERMINAL")
-    print("------------------------------------------------------------")
-    show_current_terminal()
+
+    print("\n2. TTY COMMAND")
+    print("-" * 70)
+
+    run_command(["tty"])
 
     # MESG
+
     print("\n3. MESG COMMAND")
-    print("------------------------------------------------------------")
-    check_mesg()
+    print("-" * 70)
+
+    run_command(["mesg"])
 
     # WALL
+
     print("\n4. WALL COMMAND")
-    print("------------------------------------------------------------")
-    print("A demonstration message will be sent to logged-in users.")
+    print("-" * 70)
 
     try:
+
         result = subprocess.run(
             ["wall"],
-            input="Experiment No. 3: Test message from Python program.\n",
+            input="Experiment No. 3: Hello from Python!\n",
             text=True,
             capture_output=True
         )
 
         if result.returncode == 0:
-            print("Wall message sent successfully.")
+            print("Test wall message sent successfully.")
+
         else:
             print("Wall message could not be sent.")
 
-    except Exception as e:
-        print("Error:", e)
+    except Exception as error:
 
-    # Shared Memory
-    print("\n\nPART B")
-    print("============================================================")
-    print("SHARED MEMORY")
-    print("============================================================")
+        print("Error:", error)
+
+    # ========================================================
+    # PART B
+    # ========================================================
+
+    print("\n")
+    print("=" * 70)
+    print("PART B: SHARED MEMORY")
+    print("=" * 70)
 
     # IPCS -M
+
     print("\n5. IPCS -M")
-    print("------------------------------------------------------------")
+    print("-" * 70)
+
     run_command(["ipcs", "-m"])
 
     # IPCS -M -P
+
     print("\n6. IPCS -M -P")
-    print("------------------------------------------------------------")
+    print("-" * 70)
+
     run_command(["ipcs", "-m", "-p"])
 
     # IPCS -M -T
+
     print("\n7. IPCS -M -T")
-    print("------------------------------------------------------------")
+    print("-" * 70)
+
     run_command(["ipcs", "-m", "-t"])
 
-    print("\n============================================================")
-    print("          EXPERIMENT NO. 3 COMPLETED")
-    print("============================================================")
+    # ========================================================
+
+    print("\n")
+    print("=" * 70)
+    print("             EXPERIMENT NO. 3 COMPLETED")
+    print("=" * 70)
+
+    pause()
 
 
 # ------------------------------------------------------------
@@ -455,81 +714,101 @@ def main():
     while True:
 
         print("\n")
-        print("============================================================")
-        print("                 OPERATING SYSTEMS LAB")
-        print("                 EXPERIMENT NO. 3")
-        print("============================================================")
+        print("=" * 70)
+        print("                  OPERATING SYSTEMS LAB")
+        print("                  EXPERIMENT NO. 3")
+        print("=" * 70)
 
-        print("\nCommands for Sending Messages:")
-        print("1.  who       - Show logged-in users")
-        print("2.  tty       - Show current terminal")
-        print("3.  cat       - Send message using terminal device")
+        print("\nPART A - MESSAGE COMMANDS")
+        print("-" * 70)
+
+        print("1.  who       - Display logged-in users")
+        print("2.  tty       - Display current terminal")
+        print("3.  cat       - Send message using terminal")
         print("4.  wall      - Send message to all users")
-        print("5.  write     - Send message to specific user")
+        print("5.  write     - Send message to particular user")
         print("6.  mesg      - Check message permission")
         print("7.  mesg y    - Enable messages")
         print("8.  mesg n    - Disable messages")
 
-        print("\nShared Memory:")
-        print("9.  ipcs -m   - Show shared memory")
-        print("10. ipcs -m -p - Show related process IDs")
-        print("11. ipcs -m -t - Show time information")
-        print("12. ipcs      - Show all IPC information")
+        print("\nPART B - SHARED MEMORY")
+        print("-" * 70)
+
+        print("9.  ipcs -m       - Display shared memory")
+        print("10. ipcs -m -p    - Display process IDs")
+        print("11. ipcs -m -t    - Display time information")
+        print("12. ipcs          - Display complete IPC information")
 
         print("\n13. Run Complete Experiment")
         print("0.  Exit")
 
-        print("============================================================")
+        print("=" * 70)
 
         choice = input("\nEnter your choice: ").strip()
 
         if choice == "1":
-            show_logged_users()
+
+            who_command()
 
         elif choice == "2":
-            show_current_terminal()
+
+            tty_command()
 
         elif choice == "3":
-            send_using_cat()
+
+            cat_command()
 
         elif choice == "4":
-            send_wall_message()
+
+            wall_command()
 
         elif choice == "5":
-            send_write_message()
+
+            write_command()
 
         elif choice == "6":
-            check_mesg()
+
+            mesg_command()
 
         elif choice == "7":
-            enable_mesg()
+
+            enable_messages()
 
         elif choice == "8":
-            disable_mesg()
+
+            disable_messages()
 
         elif choice == "9":
-            show_shared_memory()
+
+            ipcs_shared_memory()
 
         elif choice == "10":
-            show_shared_memory_processes()
+
+            ipcs_processes()
 
         elif choice == "11":
-            show_shared_memory_time()
+
+            ipcs_time()
 
         elif choice == "12":
-            show_all_ipc()
+
+            complete_ipcs()
 
         elif choice == "13":
+
             complete_experiment()
 
         elif choice == "0":
+
             print("\nProgram terminated.")
             print("Thank you!")
+
             sys.exit(0)
 
         else:
+
             print("\nInvalid choice!")
-            print("Please select a number from 0 to 13.")
+            print("Please enter a number from 0 to 13.")
 
 
 # ------------------------------------------------------------
@@ -537,4 +816,5 @@ def main():
 # ------------------------------------------------------------
 
 if __name__ == "__main__":
+
     main()
