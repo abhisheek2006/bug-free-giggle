@@ -1,0 +1,1 @@
+sudo apt -o Acquire::http::No-Cache=true -o Acquire::http::Pipeline-Depth=0 update
